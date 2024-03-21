@@ -47,7 +47,7 @@ of decompressing them.
 3. To fetch flat files from a gcloud bucket, and validate each epoch as they arrive:
 
 ```
-cargo run --bin fetch-gcloud --bucket --fist-epoch 0 --end-epoch 1
+cargo run --bin fetch-gcp --bucket --fist-epoch 0 --end-epoch 1
 ```
 
 4. To fetch flat files from a s3 bucket and validate each epoch as they arrive:
