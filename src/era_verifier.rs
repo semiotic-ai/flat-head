@@ -1,3 +1,4 @@
+use futures::stream::{FuturesOrdered, StreamExt};
 use header_accumulator::era_validator::era_validate;
 use header_accumulator::types::ExtHeaderRecord;
 use sf_protos::ethereum::r#type::v2::Block;
@@ -78,23 +79,26 @@ async fn extract_100s_blocks(
     let start_100_block = (start_block / 100) * 100;
     let end_100_block = (((end_block as f32) / 100.0).ceil() as usize) * 100;
 
-    let mut blocks: Vec<Block> = Vec::new();
+    let zst_extension = if decompress.unwrap() { ".zst" } else { "" };
+    let blocks_store = store::new(store_url).expect("failed to create blocks store");
 
-    let mut zst_extension = "";
-    if decompress.unwrap() {
-        zst_extension = ".zst";
-    }
+    let mut futs = FuturesOrdered::new();
 
     for block_number in (start_100_block..end_100_block).step_by(100) {
         let block_file_name = format!("{:010}.dbin{}", block_number, zst_extension);
-        let blocks_store = store::new(store_url)?;
-        let decoded_blocks = blocks_store
-            .read_blocks(&block_file_name, store::ReadOptions { decompress })
-            .await?;
+        futs.push_back(blocks_store.read_blocks(block_file_name, store::ReadOptions { decompress }))
+    }
 
-        blocks.extend(decoded_blocks);
+    let mut all_blocks = Vec::new();
+
+    while let Some(res) = futs.next().await {
+        match res {
+            Ok(blocks) => all_blocks.extend(blocks),
+            Err(e) => println!("{:?}", e),
+        }
     }
 
     // Return only the requested blocks
-    Ok(blocks[start_block - start_100_block..end_block - start_100_block].to_vec())
+
+    Ok(all_blocks[start_block - start_100_block..end_block - start_100_block].to_vec())
 }
