@@ -1,23 +1,25 @@
-use decoder::decode_flat_files;
+use futures::stream::{FuturesOrdered, StreamExt};
+use header_accumulator::era_validator::era_validate;
 use header_accumulator::types::ExtHeaderRecord;
-use header_accumulator::{era_validator::era_validate, errors::EraValidateError};
 use sf_protos::ethereum::r#type::v2::Block;
+
+use crate::store;
 pub const MAX_EPOCH_SIZE: usize = 8192;
 pub const FINAL_EPOCH: usize = 1896;
 pub const MERGE_BLOCK: usize = 15537394;
 
 /// verifies flat flies stored in directory against a header accumulator
 ///
-pub fn verify_eras(
-    directory: &String,
+pub async fn verify_eras(
+    store_url: &String,
     master_acc_file: Option<&String>,
     start_epoch: usize,
     end_epoch: Option<usize>,
     decompress: Option<bool>,
-) -> Result<Vec<usize>, EraValidateError> {
+) -> Result<Vec<usize>, anyhow::Error> {
     let mut validated_epochs = Vec::new();
     for epoch in start_epoch..=end_epoch.unwrap_or(start_epoch + 1) {
-        let blocks = get_blocks_from_dir(epoch, directory, decompress)?;
+        let blocks = get_blocks_from_dir(epoch, store_url, decompress).await?;
         let (successful_headers, _): (Vec<_>, Vec<_>) = blocks
             .iter()
             .cloned()
@@ -46,15 +48,16 @@ pub fn verify_eras(
     Ok(validated_epochs)
 }
 
-fn get_blocks_from_dir(
+async fn get_blocks_from_dir(
     epoch: usize,
-    directory: &String,
+    store_url: &String,
     decompress: Option<bool>,
-) -> Result<Vec<Block>, EraValidateError> {
+) -> Result<Vec<Block>, anyhow::Error> {
     let start_100_block = epoch * MAX_EPOCH_SIZE;
     let end_100_block = (epoch + 1) * MAX_EPOCH_SIZE;
 
-    let mut blocks = extract_100s_blocks(directory, start_100_block, end_100_block, decompress)?;
+    let mut blocks =
+        extract_100s_blocks(store_url, start_100_block, end_100_block, decompress).await?;
 
     if epoch < FINAL_EPOCH {
         blocks = blocks[0..MAX_EPOCH_SIZE].to_vec();
@@ -65,37 +68,37 @@ fn get_blocks_from_dir(
     Ok(blocks)
 }
 
-fn extract_100s_blocks(
-    directory: &String,
+async fn extract_100s_blocks(
+    store_url: &String,
     start_block: usize,
     end_block: usize,
     decompress: Option<bool>,
-) -> Result<Vec<Block>, EraValidateError> {
+) -> Result<Vec<Block>, anyhow::Error> {
     // Flat files are stored in 100 block files
     // So we need to find the 100 block file that contains the start block and the 100 block file that contains the end block
     let start_100_block = (start_block / 100) * 100;
     let end_100_block = (((end_block as f32) / 100.0).ceil() as usize) * 100;
 
-    let mut blocks: Vec<Block> = Vec::new();
+    let zst_extension = if decompress.unwrap() { ".zst" } else { "" };
+    let blocks_store = store::new(store_url).expect("failed to create blocks store");
 
-    let mut zst_extension = "";
-    if decompress.unwrap() {
-        zst_extension = ".zst";
-    }
+    let mut futs = FuturesOrdered::new();
+
     for block_number in (start_100_block..end_100_block).step_by(100) {
-        let block_file_name =
-            directory.to_owned() + &format!("/{:010}.dbin{}", block_number, zst_extension);
+        let block_file_name = format!("{:010}.dbin{}", block_number, zst_extension);
+        futs.push_back(blocks_store.read_blocks(block_file_name, store::ReadOptions { decompress }))
+    }
 
-        let decoded_blocks = match decode_flat_files(block_file_name, None, None, decompress) {
-            Ok(blocks) => blocks,
-            Err(e) => {
-                log::error!("Error decoding flat files: {:?}", e);
-                return Err(EraValidateError::FlatFileDecodeError);
-            }
-        };
-        blocks.extend(decoded_blocks);
+    let mut all_blocks = Vec::new();
+
+    while let Some(res) = futs.next().await {
+        match res {
+            Ok(blocks) => all_blocks.extend(blocks),
+            Err(e) => println!("{:?}", e),
+        }
     }
 
     // Return only the requested blocks
-    Ok(blocks[start_block - start_100_block..end_block - start_100_block].to_vec())
+
+    Ok(all_blocks[start_block - start_100_block..end_block - start_100_block].to_vec())
 }
