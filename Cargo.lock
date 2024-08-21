@@ -1215,7 +1215,7 @@ dependencies = [
 [[package]]
 name = "decoder"
 version = "0.1.1"
-source = "git+https://github.com/semiotic-ai/flat-files-decoder.git?branch=joseph/tru-233-update-prost-dependencies-in-flat-files-decoder#bcd0f85b7d6ee0d85e1688810845019d5879cebd"
+source = "git+https://github.com/semiotic-ai/flat-files-decoder.git?branch=main#f512c9a8f31482637ade6f1916ac93402037c2f5"
 dependencies = [
  "alloy-primitives",
  "alloy-rlp",
@@ -2075,7 +2075,7 @@ dependencies = [
 [[package]]
 name = "header_accumulator"
 version = "0.1.0"
-source = "git+https://git@github.com/semiotic-ai/header_accumulator.git?branch=joseph/tru-234-test-that-upstream-protobufs-dependency-updates-work-with#b716430e0597f73688934d671483f75a7898915a"
+source = "git+https://git@github.com/semiotic-ai/header_accumulator.git?branch=main#ca94b75136e5eefca25817a8af66665406fd07f0"
 dependencies = [
  "alloy-primitives",
  "base64 0.21.7",
@@ -3330,9 +3330,9 @@ dependencies = [
 
 [[package]]
 name = "prost"
-version = "0.13.1"
+version = "0.12.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e13db3d3fde688c61e2446b4d843bc27a7e8af269a69440c0308021dc92333cc"
+checksum = "deb1435c188b76130da55f17a466d252ff7b1418b2ad3e037d127b94e3411f29"
 dependencies = [
  "bytes",
  "prost-derive",
@@ -3340,13 +3340,13 @@ dependencies = [
 
 [[package]]
 name = "prost-build"
-version = "0.13.1"
+version = "0.12.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5bb182580f71dd070f88d01ce3de9f4da5021db7115d2e1c3605a754153b77c1"
+checksum = "22505a5c94da8e3b7c2996394d1c933236c4d743e81a410bcca4e6989fc066a4"
 dependencies = [
  "bytes",
- "heck 0.4.1",
- "itertools 0.10.5",
+ "heck 0.5.0",
+ "itertools 0.12.1",
  "log",
  "multimap",
  "once_cell",
@@ -3361,12 +3361,12 @@ dependencies = [
 
 [[package]]
 name = "prost-derive"
-version = "0.13.1"
+version = "0.12.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18bec9b0adc4eba778b33684b7ba3e7137789434769ee3ce3930463ef904cfca"
+checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
- "itertools 0.10.5",
+ "itertools 0.12.1",
  "proc-macro2",
  "quote",
  "syn 2.0.74",
@@ -3374,18 +3374,18 @@ dependencies = [
 
 [[package]]
 name = "prost-types"
-version = "0.13.1"
+version = "0.12.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cee5168b05f49d4b0ca581206eb14a7b22fafd963efe729ac48eb03266e25cc2"
+checksum = "9091c90b0a32608e984ff2fa4091273cbdd755d54935c51d520887f4a1dbd5b0"
 dependencies = [
  "prost",
 ]
 
 [[package]]
 name = "prost-wkt"
-version = "0.6.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8d84e2bee181b04c2bac339f2bfe818c46a99750488cc6728ce4181d5aa8299"
+checksum = "5fb7ec2850c138ebaa7ab682503b5d08c3cb330343e9c94776612928b6ddb53f"
 dependencies = [
  "chrono",
  "inventory",
@@ -3398,11 +3398,11 @@ dependencies = [
 
 [[package]]
 name = "prost-wkt-build"
-version = "0.6.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a669d5acbe719010c6f62a64e6d7d88fdedc1fe46e419747949ecb6312e9b14"
+checksum = "598b7365952c2ed4e32902de0533653aafbe5ae3da436e8e2335c7d375a1cef3"
 dependencies = [
- "heck 0.4.1",
+ "heck 0.5.0",
  "prost",
  "prost-build",
  "prost-types",
@@ -3411,9 +3411,9 @@ dependencies = [
 
 [[package]]
 name = "prost-wkt-types"
-version = "0.6.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01ef068e9b82e654614b22e6b13699bd545b6c0e2e721736008b00b38aeb4f64"
+checksum = "1a8eadc2381640a49c1fbfb9f4a857794b4e5bf5a2cbc2d858cfdb74f64dcd22"
 dependencies = [
  "chrono",
  "prost",
@@ -4344,12 +4344,13 @@ dependencies = [
 [[package]]
 name = "sf-protos"
 version = "0.1.0"
-source = "git+https://github.com/semiotic-ai/sf-protos.git?branch=joseph/tru-230-review-how-were-compiling-protobufs-in-sf-protos#0c8fc8208ea8b5a41bb8e00fe30ac9f1b8300ae6"
+source = "git+https://github.com/semiotic-ai/sf-protos.git?branch=main#7da33356906ec3315802cf1be9c5316d2dbc0437"
 dependencies = [
  "alloy-primitives",
  "ethportal-api",
  "prost",
  "prost-build",
+ "prost-types",
  "prost-wkt",
  "prost-wkt-build",
  "prost-wkt-types",
